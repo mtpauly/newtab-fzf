@@ -1,0 +1,13 @@
+{
+    "manifest_version": 3,
+    "name": "Fuzzy Bookmark Search",
+    "version": "1.0",
+    "description": "Search your bookmarks with fuzzy finding",
+    "permissions": ["bookmarks"],
+    "action": {
+        "default_popup": "newtab.html"
+    },
+    "chrome_url_overrides" : {
+        "newtab": "newtab.html"
+    }
+}

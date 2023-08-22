@@ -1,0 +1,69 @@
+:root {
+    --background-color: #272829;
+    --text: #ffffff;
+    --highlight: #BDD2B6;
+    --text_alternate: #000000;
+    --selected: #C8AE7D;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: var(--background-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 0px;
+    padding-left: 30px;
+    padding-right: 30px;
+    margin: 0px;
+    border: 0px;
+}
+
+header {
+    text-align: center;
+}
+header h1 {
+    font-size: 1.5em;
+    color: var(--text);
+}
+
+#customSearchBar {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 0px;
+    font-size: 1em;
+    outline: none;
+    background-color: var(--selected);
+    color: var(--text_alternate);
+}
+
+#results {
+    width: 100%;
+    padding: 0px;
+    border: 0px;
+    margin: 0px;
+    color: var(--text);
+}
+#results div {
+    padding: 5px;
+    margin: 0px;
+    border-radius: 0px;
+    transition: background-color 0.2s ease;
+}
+
+#results a {
+    text-decoration: none;
+    color: var(--text);
+}
+.highlight {
+    background-color: var(--highlight);
+    color: var(--text_alternate);
+    font-color: var(--text_alternate);
+}
+
+.selected {
+    background-color: var(--selected);
+}
+#results div:hover {
+    background-color: var(--selected);
+}
