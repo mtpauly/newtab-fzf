@@ -20,15 +20,16 @@ function displayItems(items, results) {
     items.forEach(function(item, i) {
         var div = document.createElement('div');
         var a = document.createElement('a');
+        var favicon = `<img src="https://www.google.com/s2/favicons?domain=${item.url}" class="favicon">`
+        var url_text = `&nbsp;&nbsp;&nbsp;&nbsp;<span class="url">${item.url}</span>`;
         if (results) {
             // if search results are provided, highlight the matched characters
-            div.innerHTML = fuzzysort.highlight(results[i], '<span class="highlight">', '</span>');
+            var highlight = fuzzysort.highlight(results[i], '<span class="highlight">', '</span>')
+            div.innerHTML = favicon + `<span class="text">${highlight}${url_text}</span>`;
         } else {
             // if no search results are provided, display the title as is
-            div.textContent = item.title;
+            div.innerHTML = favicon + `<span class="text">${item.title}${url_text}</span>`;
         }
-        // TODO: also display the url (or at least as much as will fit, have it in a gray color)
-        // TODO: can we display favicons?
         a.href = item.url;
         a.target = "_blank";  // open in a new tab
         a.appendChild(div);
@@ -57,14 +58,14 @@ window.onload = function() {
 
     // Traverse the bookmarks tree
     function traverseBookmarks(node, folder) {
-        folder = folder.replace("/Bookmarks Bar/", "")
+        folder = folder.replace("/ Bookmarks Bar /", "")
         if(node.url) {
             node.title = folder + node.title
             bookmarks.push(node);
         }
         if(node.children) {
             node.children.forEach(function(child) {
-                traverseBookmarks(child, folder + node.title + "/");
+                traverseBookmarks(child, folder + node.title + " / ");
             });
         }
     }
@@ -83,7 +84,7 @@ window.onload = function() {
             lastSearchResults = null;
             currentResults = bookmarks;
         } else {
-            // TODO: this fuzzysort is a little weird, 
+            // TODO: this fuzzysort is a little weird, displaying items that don't have the query contingous before ones that do
             var results = fuzzysort.go(query, bookmarks, {key: 'title', limit: 50, threshold: 0});
             var results_obj = results.map(result => result.obj)
             displayItems(results_obj, results);
@@ -107,9 +108,10 @@ window.onload = function() {
                 selectedIndex--;
                 displayItems(currentResults, lastSearchResults);
             }
-        } else if (e.key === 'Enter' && currentResults.length > 0) {
-            // TODO: open in the current tab, shift enter to open in a new tab
-            var newTab = window.open(currentResults[selectedIndex].url, '_blank');
-            window.focus();  // try to refocus on the current window
+        } else if (((e.ctrlKey && e.key === 'y') || e.key === "Enter") && currentResults.length > 0) {
+            window.open(currentResults[selectedIndex].url, "_self");
+            // TODO: option for opening in a new tab
+            // var newTab = window.open(currentResults[selectedIndex].url, '_blank');
+            // window.focus();  // try to refocus on the current window
         }});
 }

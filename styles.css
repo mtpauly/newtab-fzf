@@ -1,69 +1,83 @@
 :root {
     --background-color: #272829;
-    --text: #ffffff;
-    --highlight: #BDD2B6;
-    --text_alternate: #000000;
-    --selected: #C8AE7D;
+    --text: #D8D9DA;
+    --text2: #61677A;
+    --highlight: #CECE5A;
+    --text_selected: #ffffff;
+    --selected: #765827;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: Arial, sans-serif;
 }
 
 body {
-    font-family: Arial, sans-serif;
-    background-color: var(--background-color);
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-top: 0px;
-    padding-left: 30px;
-    padding-right: 30px;
-    margin: 0px;
-    border: 0px;
+    background-color: var(--background-color);
 }
 
 header {
+    width: 100%;
     text-align: center;
-}
-header h1 {
-    font-size: 1.5em;
+    font-size: .8em;
     color: var(--text);
+}
+
+#content {
+    width: 90%;
+    max-width: 800px;
+    display: flex;
+    flex-direction: column;
 }
 
 #customSearchBar {
-    width: 100%;
-    margin-bottom: 10px;
-    padding: 0px;
-    font-size: 1em;
-    outline: none;
-    background-color: var(--selected);
-    color: var(--text_alternate);
-}
-
-#results {
-    width: 100%;
-    padding: 0px;
-    border: 0px;
-    margin: 0px;
-    color: var(--text);
-}
-#results div {
-    padding: 5px;
-    margin: 0px;
-    border-radius: 0px;
-    transition: background-color 0.2s ease;
-}
-
-#results a {
-    text-decoration: none;
-    color: var(--text);
-}
-.highlight {
-    background-color: var(--highlight);
-    color: var(--text_alternate);
-    font-color: var(--text_alternate);
+    margin-bottom: 15px;
 }
 
 .selected {
     background-color: var(--selected);
+    color: var(--text_selected) !important;
 }
+
 #results div:hover {
     background-color: var(--selected);
+}
+
+#results a {
+    text-decoration: none;
+}
+
+#results div {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    color: var(--text);
+    padding: 2px;
+}
+
+#results span.text {
+    padding-left: 5px;
+}
+
+#results span.highlight {
+    color: var(--highlight) !important;
+}
+
+#results span.url {
+    color: var(--text2) !important;
+}
+
+.selected .url {
+    color: var(--text) !important;
+}
+
+img.favicon {
+    width: 10px;
+    height: 10px;
 }
