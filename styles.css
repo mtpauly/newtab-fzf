@@ -44,6 +44,12 @@ header {
     color: var(--text_selected) !important;
 }
 
+#results {
+    height: 400px;
+    overflow-y: scroll;
+    position: relative;
+}
+
 #results div:hover {
     background-color: var(--selected);
 }
@@ -75,6 +81,11 @@ header {
 
 .selected .url {
     color: var(--text) !important;
+}
+
+#resultsInfo {
+    margin-top: 20px;
+    color: var(--text);
 }
 
 img.favicon {

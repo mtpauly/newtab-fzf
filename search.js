@@ -1,7 +1,10 @@
+const DISPLAY_LIMIT = 100;  // limit the number of results displayed
+const SCROLL_AMOUNT = 5;  // amount to scroll when Ctrl-u is pressed
+
 var selectedIndex = 0;  // keep track of the selected index
 
 
-function displayItems(items, results) {
+function displayItems(items, results, reverse=false) {
     // clear the previous results
     var resultsDiv = document.getElementById('results');
     while (resultsDiv.firstChild) {
@@ -14,6 +17,10 @@ function displayItems(items, results) {
         div.textContent = "No results found.";
         resultsDiv.appendChild(div);
         return;
+    }
+
+    if (reverse) {
+        items = items.reverse();
     }
 
     // display the new results
@@ -36,6 +43,10 @@ function displayItems(items, results) {
         if (i === selectedIndex) {
             // if this is the selected item, add the selected class
             div.classList.add('selected');
+            // Scroll the selected item into the middle of the resultsDiv
+            setTimeout(() => {
+                resultsDiv.scrollTop = div.offsetTop - resultsDiv.offsetHeight / 2 + div.offsetHeight / 2;
+            }, 0);
         }
         resultsDiv.appendChild(a);
     });
@@ -52,7 +63,7 @@ window.onload = function() {
             traverseBookmarks(node, "");
         });
 
-        displayItems(bookmarks);  // display all items initially
+        displayItems(bookmarks, null, true);  // display all items initially
         currentResults = bookmarks;
     });
 
@@ -75,22 +86,28 @@ window.onload = function() {
 
     var lastSearchResults = null;  // store the last search results
     searchBar.addEventListener('input', function() {
+        var startTime = performance.now();
+
         var query = this.value;
         selectedIndex = 0;  // reset the selected index
         
         if (query === '') {
             // if the search bar is empty, display all items
-            displayItems(bookmarks);
+            displayItems(bookmarks, null, true);
             lastSearchResults = null;
             currentResults = bookmarks;
         } else {
-            // TODO: this fuzzysort is a little weird, displaying items that don't have the query contingous before ones that do
-            var results = fuzzysort.go(query, bookmarks, {key: 'title', limit: 50, threshold: 0});
+            // NOTE: this fuzzysort is a little weird, displaying items that don't have the query contingous before ones that do
+            var results = fuzzysort.go(query, bookmarks, {key: 'title', limit: DISPLAY_LIMIT, threshold: 0});
             var results_obj = results.map(result => result.obj)
             displayItems(results_obj, results);
             lastSearchResults = results;
             currentResults = results_obj;
         }
+
+        var timeTaken = ((performance.now() - startTime) / 1000).toFixed(2);  // time taken in seconds
+        var resultsInfoDiv = document.getElementById('resultsInfo');
+        resultsInfoDiv.textContent = `found ${currentResults.length} results in ${timeTaken} seconds`;
     });
 
     searchBar.addEventListener('keydown', function(e) {
@@ -108,6 +125,18 @@ window.onload = function() {
                 selectedIndex--;
                 displayItems(currentResults, lastSearchResults);
             }
+        } else if (e.ctrlKey && e.key === 'd') {
+            selectedIndex += SCROLL_AMOUNT;
+            if (selectedIndex > currentResults.length - 1) {
+                selectedIndex = currentResults.length - 1;
+            }
+            displayItems(currentResults, lastSearchResults);
+        } else if (e.ctrlKey && e.key === 'u') {
+            selectedIndex -= SCROLL_AMOUNT;
+            if (selectedIndex < 0) {
+                selectedIndex = 0;
+            }
+            displayItems(currentResults, lastSearchResults);
         } else if (((e.ctrlKey && e.key === 'y') || e.key === "Enter") && currentResults.length > 0) {
             window.open(currentResults[selectedIndex].url, "_self");
             // TODO: option for opening in a new tab
