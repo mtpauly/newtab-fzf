@@ -20,7 +20,7 @@ function displayItems(items, results, reverse=false) {
     }
 
     if (reverse) {
-        items = items.reverse();
+        items = items.slice().reverse();
     }
 
     // display the new results
