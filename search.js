@@ -4,7 +4,7 @@ const SCROLL_AMOUNT = 5;  // amount to scroll when Ctrl-u is pressed
 var selectedIndex = 0;  // keep track of the selected index
 
 
-function displayItems(items, results, reverse=false) {
+function displayItems(items, results) {
     // clear the previous results
     var resultsDiv = document.getElementById('results');
     while (resultsDiv.firstChild) {
@@ -19,7 +19,7 @@ function displayItems(items, results, reverse=false) {
         return;
     }
 
-    if (reverse) {
+    if (!results) {
         items = items.slice().reverse();
     }
 
@@ -53,6 +53,14 @@ function displayItems(items, results, reverse=false) {
 }
 
 
+function updateResultsInfo(nResults, timeTaken) {
+    var resultsInfoDiv = document.getElementById('resultsInfo');
+    resultsInfoDiv.textContent = `found ${nResults} results in ${timeTaken} seconds`;
+
+    // TODO: add link for random bookmark (and keybind for it too)
+}
+
+
 window.onload = function() {
     let bookmarks = [];
     var currentResults = [];  // keep track of the current results
@@ -63,7 +71,7 @@ window.onload = function() {
             traverseBookmarks(node, "");
         });
 
-        displayItems(bookmarks, null, true);  // display all items initially
+        displayItems(bookmarks);  // display all items initially
         currentResults = bookmarks;
     });
 
@@ -93,7 +101,7 @@ window.onload = function() {
         
         if (query === '') {
             // if the search bar is empty, display all items
-            displayItems(bookmarks, null, true);
+            displayItems(bookmarks);
             lastSearchResults = null;
             currentResults = bookmarks;
         } else {
@@ -106,8 +114,7 @@ window.onload = function() {
         }
 
         var timeTaken = ((performance.now() - startTime) / 1000).toFixed(2);  // time taken in seconds
-        var resultsInfoDiv = document.getElementById('resultsInfo');
-        resultsInfoDiv.textContent = `found ${currentResults.length} results in ${timeTaken} seconds`;
+        updateResultsInfo(currentResults.length, timeTaken);
     });
 
     searchBar.addEventListener('keydown', function(e) {
@@ -139,8 +146,12 @@ window.onload = function() {
             displayItems(currentResults, lastSearchResults);
         } else if (((e.ctrlKey && e.key === 'y') || e.key === "Enter") && currentResults.length > 0) {
             window.open(currentResults[selectedIndex].url, "_self");
-            // TODO: option for opening in a new tab
+
+            // TODO: option for opening in a new tab (not sure if this is possible)
             // var newTab = window.open(currentResults[selectedIndex].url, '_blank');
             // window.focus();  // try to refocus on the current window
-        }});
+        }
+
+        // TODO: add key for random bookmark
+    });
 }
