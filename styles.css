@@ -88,6 +88,15 @@ header {
     color: var(--text);
 }
 
+#randomBookmarkText {
+    color: var(--text);
+    text-decoration: none;
+}
+
+#randomBookmarkText:hover {
+    background-color: var(--selected);
+}
+
 img.favicon {
     width: 10px;
     height: 10px;

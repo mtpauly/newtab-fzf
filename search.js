@@ -38,7 +38,6 @@ function displayItems(items, results) {
             div.innerHTML = favicon + `<span class="text">${item.title}${url_text}</span>`;
         }
         a.href = item.url;
-        a.target = "_blank";  // open in a new tab
         a.appendChild(div);
         if (i === selectedIndex) {
             // if this is the selected item, add the selected class
@@ -53,17 +52,22 @@ function displayItems(items, results) {
 }
 
 
-function updateResultsInfo(nResults, timeTaken) {
-    var resultsInfoDiv = document.getElementById('resultsInfo');
-    resultsInfoDiv.textContent = `found ${nResults} results in ${timeTaken} seconds`;
+function updateResultsInfo(results, timeTaken) {
+    var resultsInfoSpan = document.getElementById('resultsInfoText');
+    resultsInfoSpan.textContent = `found ${results.length} results in ${timeTaken} seconds`;
 
-    // TODO: add link for random bookmark (and keybind for it too)
+    document.getElementById('randomBookmarkText').addEventListener('click', function() {
+        var bookmark = results[Math.floor(Math.random() * results.length)];
+        this.href = bookmark.url;
+    });
 }
 
 
 window.onload = function() {
     let bookmarks = [];
     var currentResults = [];  // keep track of the current results
+
+    var startTime = performance.now();
 
     // Get all bookmarks when the page loads
     chrome.bookmarks.getTree(function(nodes) {
@@ -73,6 +77,9 @@ window.onload = function() {
 
         displayItems(bookmarks);  // display all items initially
         currentResults = bookmarks;
+
+        var timeTaken = ((performance.now() - startTime) / 1000).toFixed(2);  // time taken in seconds
+        updateResultsInfo(bookmarks, timeTaken);
     });
 
     // Traverse the bookmarks tree
@@ -114,7 +121,7 @@ window.onload = function() {
         }
 
         var timeTaken = ((performance.now() - startTime) / 1000).toFixed(2);  // time taken in seconds
-        updateResultsInfo(currentResults.length, timeTaken);
+        updateResultsInfo(currentResults, timeTaken);
     });
 
     searchBar.addEventListener('keydown', function(e) {
@@ -150,8 +157,9 @@ window.onload = function() {
             // TODO: option for opening in a new tab (not sure if this is possible)
             // var newTab = window.open(currentResults[selectedIndex].url, '_blank');
             // window.focus();  // try to refocus on the current window
+        } else if (e.ctrlKey && e.key === 'r') {
+            var bookmark = currentResults[Math.floor(Math.random() * currentResults.length)];
+            window.open(bookmark.url, "_self");
         }
-
-        // TODO: add key for random bookmark
     });
 }
