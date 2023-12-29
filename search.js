@@ -19,10 +19,6 @@ function displayItems(items, results) {
         return;
     }
 
-    if (!results) {
-        items = items.slice().reverse();
-    }
-
     // display the new results
     items.forEach(function(item, i) {
         var div = document.createElement('div');
@@ -74,6 +70,8 @@ window.onload = function() {
         nodes.forEach(function(node) {
             traverseBookmarks(node, "");
         });
+
+        bookmarks = bookmarks.reverse();  // reverse the order so that the most recent bookmarks are first
 
         displayItems(bookmarks);  // display all items initially
         currentResults = bookmarks;
