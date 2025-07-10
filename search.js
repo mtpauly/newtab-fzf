@@ -2,19 +2,19 @@ const DISPLAY_LIMIT = 100;  // limit the number of results displayed
 const SCROLL_AMOUNT = 5;  // amount to scroll when Ctrl-u is pressed
 const FUZZYSORT_THRESHOLD = 0;  // minimum score for fuzzysort matches
 
-var selectedIndex = 0;  // keep track of the selected index
+let selectedIndex = 0;  // keep track of the selected index
 
 
 function displayItems(items, titleResults, urlResults) {
     // clear the previous results
-    var resultsDiv = document.getElementById('results');
+    const resultsDiv = document.getElementById('results');
     while (resultsDiv.firstChild) {
         resultsDiv.removeChild(resultsDiv.firstChild);
     }
 
     // if there are no results, display a message
     if (items.length === 0) {
-        var div = document.createElement('div');
+        const div = document.createElement('div');
         div.textContent = "No results found.";
         resultsDiv.appendChild(div);
         return;
@@ -22,12 +22,12 @@ function displayItems(items, titleResults, urlResults) {
 
     // display the new results
     items.forEach(function(item, i) {
-        var div = document.createElement('div');
-        var a = document.createElement('a');
-        var favicon = `<img src="https://www.google.com/s2/favicons?domain=${item.url}" class="favicon">`
+        const div = document.createElement('div');
+        const a = document.createElement('a');
+        const favicon = `<img src="https://www.google.com/s2/favicons?domain=${item.url}" class="favicon">`
 
-        var titleText = item.title;
-        var urlText = item.url;
+        const titleText = item.title;
+        let urlText = item.url;
 
         // Highlight title if title results are provided
         if (titleResults) {
@@ -37,13 +37,13 @@ function displayItems(items, titleResults, urlResults) {
         // Highlight URL if URL results are provided
         if (urlResults) {
             // Find the matching URL result for this item
-            var urlResult = urlResults.find(result => result.obj === item);
+            const urlResult = urlResults.find(result => result.obj === item);
             if (urlResult) {
                 urlText = fuzzysort.highlight(urlResult, '<span class="highlight">', '</span>');
             }
         }
 
-        var url_text = `&nbsp;&nbsp;&nbsp;&nbsp;<span class="url">${urlText}</span>`;
+        const url_text = `&nbsp;&nbsp;&nbsp;&nbsp;<span class="url">${urlText}</span>`;
         div.innerHTML = favicon + `<span class="text">${titleText}${url_text}</span>`;
 
         a.href = item.url;
@@ -62,11 +62,11 @@ function displayItems(items, titleResults, urlResults) {
 
 
 function updateResultsInfo(results, timeTaken) {
-    var resultsInfoSpan = document.getElementById('resultsInfoText');
+    const resultsInfoSpan = document.getElementById('resultsInfoText');
     resultsInfoSpan.textContent = `found ${results.length} results in ${timeTaken} seconds`;
 
     document.getElementById('randomBookmarkText').addEventListener('click', function() {
-        var bookmark = results[Math.floor(Math.random() * results.length)];
+        const bookmark = results[Math.floor(Math.random() * results.length)];
         this.href = bookmark.url;
     });
 }
@@ -74,9 +74,9 @@ function updateResultsInfo(results, timeTaken) {
 
 window.onload = function() {
     let bookmarks = [];
-    var currentResults = [];  // keep track of the current results
+    let currentResults = [];  // keep track of the current results
 
-    var startTime = performance.now();
+    const startTime = performance.now();
 
     // Get all bookmarks when the page loads
     chrome.bookmarks.getTree(function(nodes) {
@@ -89,7 +89,7 @@ window.onload = function() {
         displayItems(bookmarks);  // display all items initially
         currentResults = bookmarks;
 
-        var timeTaken = ((performance.now() - startTime) / 1000).toFixed(2);  // time taken in seconds
+        const timeTaken = ((performance.now() - startTime) / 1000).toFixed(2);  // time taken in seconds
         updateResultsInfo(bookmarks, timeTaken);
     });
 
@@ -107,15 +107,16 @@ window.onload = function() {
         }
     }
 
-    var searchBar = document.getElementById('customSearchBar');
+    const searchBar = document.getElementById('customSearchBar');
     searchBar.focus();
 
-    var lastSearchResults = null;  // store the last search results
-    var lastUrlResults = null;  // store the last URL search results
-    searchBar.addEventListener('input', function() {
-        var startTime = performance.now();
+    let lastSearchResults = null;  // store the last search results
+    let lastUrlResults = null;  // store the last URL search results
 
-        var query = this.value;
+    searchBar.addEventListener('input', function() {
+        const startTime = performance.now();
+
+        const query = this.value;
         selectedIndex = 0;  // reset the selected index
 
         if (query === '') {
@@ -125,11 +126,11 @@ window.onload = function() {
             lastUrlResults = null;
             currentResults = bookmarks;
         } else {
-            var titleQuery, urlQuery;
+            let titleQuery, urlQuery;
 
             // Check if query contains double space for dual search
             if (query.includes('  ')) {
-                var parts = query.split('  ');
+                const parts = query.split('  ');
                 titleQuery = parts[0];
                 urlQuery = parts[1] || '';
             } else {
@@ -137,9 +138,9 @@ window.onload = function() {
                 urlQuery = '';
             }
 
-            var filteredBookmarks = bookmarks;
+            let filteredBookmarks = bookmarks;
 
-            var urlResults = null;
+            let urlResults = null;
 
             // If URL query is provided, first filter by URL using fuzzysort
             if (urlQuery) {
@@ -150,8 +151,8 @@ window.onload = function() {
             // Then search by title using fuzzysort
             if (titleQuery) {
                 // NOTE: this fuzzysort is a little weird, displaying items that don't have the query contingous before ones that do
-                var results = fuzzysort.go(titleQuery, filteredBookmarks, { key: 'title', limit: DISPLAY_LIMIT, threshold: FUZZYSORT_THRESHOLD });
-                var results_obj = results.map(result => result.obj);
+                const results = fuzzysort.go(titleQuery, filteredBookmarks, { key: 'title', limit: DISPLAY_LIMIT, threshold: FUZZYSORT_THRESHOLD });
+                const results_obj = results.map(result => result.obj);
                 displayItems(results_obj, results, urlResults);
                 lastSearchResults = results;
                 lastUrlResults = urlResults;
@@ -165,7 +166,7 @@ window.onload = function() {
             }
         }
 
-        var timeTaken = ((performance.now() - startTime) / 1000).toFixed(2);  // time taken in seconds
+        const timeTaken = ((performance.now() - startTime) / 1000).toFixed(2);  // time taken in seconds
         updateResultsInfo(currentResults, timeTaken);
     });
 
@@ -200,10 +201,10 @@ window.onload = function() {
             window.open(currentResults[selectedIndex].url, "_self");
 
             // TODO: option for opening in a new tab (not sure if this is possible)
-            // var newTab = window.open(currentResults[selectedIndex].url, '_blank');
+            // const newTab = window.open(currentResults[selectedIndex].url, '_blank');
             // window.focus();  // try to refocus on the current window
         } else if (e.ctrlKey && e.key === 'r') {
-            var bookmark = currentResults[Math.floor(Math.random() * currentResults.length)];
+            const bookmark = currentResults[Math.floor(Math.random() * currentResults.length)];
             window.open(bookmark.url, "_self");
         }
     });
