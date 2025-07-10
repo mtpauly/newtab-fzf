@@ -1,18 +1,18 @@
-const DISPLAY_LIMIT = 100;  // limit the number of results displayed
-const SCROLL_AMOUNT = 5;  // amount to scroll when Ctrl-u is pressed
-const FUZZYSORT_THRESHOLD = 0;  // minimum score for fuzzysort matches
+const DISPLAY_LIMIT = 100;  // Limit the number of results displayed
+const SCROLL_AMOUNT = 5;  // Amount to scroll when Ctrl-u is pressed
+const FUZZYSORT_THRESHOLD = 0;  // Minimum score for fuzzysort matches
 
-let selectedIndex = 0;  // keep track of the selected index
+let selectedIndex = 0;  // Keep track of the selected index
 
 
 function displayItems(items, titleResults, urlResults) {
-    // clear the previous results
+    // Clear the previous results
     const resultsDiv = document.getElementById('results');
     while (resultsDiv.firstChild) {
         resultsDiv.removeChild(resultsDiv.firstChild);
     }
 
-    // if there are no results, display a message
+    // If there are no results, display a message
     if (items.length === 0) {
         const div = document.createElement('div');
         div.textContent = "No results found.";
@@ -20,7 +20,7 @@ function displayItems(items, titleResults, urlResults) {
         return;
     }
 
-    // display the new results
+    // Display the new results
     items.forEach(function(item, i) {
         const div = document.createElement('div');
         const a = document.createElement('a');
@@ -49,7 +49,7 @@ function displayItems(items, titleResults, urlResults) {
         a.href = item.url;
         a.appendChild(div);
         if (i === selectedIndex) {
-            // if this is the selected item, add the selected class
+            // If this is the selected item, add the selected class
             div.classList.add('selected');
             // Scroll the selected item into the middle of the resultsDiv
             setTimeout(() => {
@@ -74,7 +74,7 @@ function updateResultsInfo(results, timeTaken) {
 
 window.onload = function() {
     let bookmarks = [];
-    let currentResults = [];  // keep track of the current results
+    let currentResults = [];  // Keep track of the current results
 
     const startTime = performance.now();
 
@@ -84,12 +84,12 @@ window.onload = function() {
             traverseBookmarks(node, "");
         });
 
-        bookmarks = bookmarks.reverse();  // reverse the order so that the most recent bookmarks are first
+        bookmarks = bookmarks.reverse();  // Reverse the order so that the most recent bookmarks are first
 
-        displayItems(bookmarks);  // display all items initially
+        displayItems(bookmarks);  // Display all items initially
         currentResults = bookmarks;
 
-        const timeTaken = ((performance.now() - startTime) / 1000).toFixed(2);  // time taken in seconds
+        const timeTaken = ((performance.now() - startTime) / 1000).toFixed(2);  // Time taken in seconds
         updateResultsInfo(bookmarks, timeTaken);
     });
 
@@ -110,17 +110,17 @@ window.onload = function() {
     const searchBar = document.getElementById('customSearchBar');
     searchBar.focus();
 
-    let lastSearchResults = null;  // store the last search results
-    let lastUrlResults = null;  // store the last URL search results
+    let lastSearchResults = null;  // Store the last search results
+    let lastUrlResults = null;  // Store the last URL search results
 
     searchBar.addEventListener('input', function() {
         const startTime = performance.now();
 
         const query = this.value;
-        selectedIndex = 0;  // reset the selected index
+        selectedIndex = 0;  // Reset the selected index
 
         if (query === '') {
-            // if the search bar is empty, display all items
+            // If the search bar is empty, display all items
             displayItems(bookmarks);
             lastSearchResults = null;
             lastUrlResults = null;
@@ -150,7 +150,7 @@ window.onload = function() {
 
             // Then search by title using fuzzysort
             if (titleQuery) {
-                // NOTE: this fuzzysort is a little weird, displaying items that don't have the query contingous before ones that do
+                // NOTE: This fuzzysort is a little weird, displaying items that don't have the query contingous before ones that do
                 const results = fuzzysort.go(titleQuery, filteredBookmarks, { key: 'title', limit: DISPLAY_LIMIT, threshold: FUZZYSORT_THRESHOLD });
                 const results_obj = results.map(result => result.obj);
                 displayItems(results_obj, results, urlResults);
@@ -166,21 +166,21 @@ window.onload = function() {
             }
         }
 
-        const timeTaken = ((performance.now() - startTime) / 1000).toFixed(2);  // time taken in seconds
+        const timeTaken = ((performance.now() - startTime) / 1000).toFixed(2);  // Time taken in seconds
         updateResultsInfo(currentResults, timeTaken);
     });
 
     searchBar.addEventListener('keydown', function(e) {
         if ((e.ctrlKey && e.key === 'j') || e.key === 'ArrowDown') {
-            // if Ctrl-j or ArrowDown is pressed, move the selection down
-            e.preventDefault();  // prevent the default behavior (scrolling the page)
+            // If Ctrl-j or ArrowDown is pressed, move the selection down
+            e.preventDefault();  // Prevent the default behavior (scrolling the page)
             if (selectedIndex < currentResults.length - 1) {
                 selectedIndex++;
                 displayItems(currentResults, lastSearchResults, lastUrlResults);
             }
         } else if ((e.ctrlKey && e.key === 'k') || e.key === 'ArrowUp') {
-            // if Ctrl-k or ArrowUp is pressed, move the selection up
-            e.preventDefault();  // prevent the default behavior (scrolling the page)
+            // If Ctrl-k or ArrowUp is pressed, move the selection up
+            e.preventDefault();  // Prevent the default behavior (scrolling the page)
             if (selectedIndex > 0) {
                 selectedIndex--;
                 displayItems(currentResults, lastSearchResults, lastUrlResults);
@@ -200,9 +200,9 @@ window.onload = function() {
         } else if (((e.ctrlKey && e.key === 'y') || e.key === "Enter") && currentResults.length > 0) {
             window.open(currentResults[selectedIndex].url, "_self");
 
-            // TODO: option for opening in a new tab (not sure if this is possible)
+            // TODO: Option for opening in a new tab (not sure if this is possible)
             // const newTab = window.open(currentResults[selectedIndex].url, '_blank');
-            // window.focus();  // try to refocus on the current window
+            // window.focus();  // Try to refocus on the current window
         } else if (e.ctrlKey && e.key === 'r') {
             const bookmark = currentResults[Math.floor(Math.random() * currentResults.length)];
             window.open(bookmark.url, "_self");
