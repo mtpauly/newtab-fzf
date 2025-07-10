@@ -26,7 +26,7 @@ function displayItems(items, titleResults, urlResults) {
         const a = document.createElement('a');
         const favicon = `<img src="https://www.google.com/s2/favicons?domain=${item.url}" class="favicon">`
 
-        const titleText = item.title;
+        let titleText = item.title;
         let urlText = item.url;
 
         // Highlight title if title results are provided
