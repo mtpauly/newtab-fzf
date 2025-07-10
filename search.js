@@ -1,10 +1,11 @@
 const DISPLAY_LIMIT = 100;  // limit the number of results displayed
 const SCROLL_AMOUNT = 5;  // amount to scroll when Ctrl-u is pressed
+const FUZZYSORT_THRESHOLD = 0;  // minimum score for fuzzysort matches
 
 var selectedIndex = 0;  // keep track of the selected index
 
 
-function displayItems(items, results) {
+function displayItems(items, titleResults, urlResults) {
     // clear the previous results
     var resultsDiv = document.getElementById('results');
     while (resultsDiv.firstChild) {
@@ -24,15 +25,27 @@ function displayItems(items, results) {
         var div = document.createElement('div');
         var a = document.createElement('a');
         var favicon = `<img src="https://www.google.com/s2/favicons?domain=${item.url}" class="favicon">`
-        var url_text = `&nbsp;&nbsp;&nbsp;&nbsp;<span class="url">${item.url}</span>`;
-        if (results) {
-            // if search results are provided, highlight the matched characters
-            var highlight = fuzzysort.highlight(results[i], '<span class="highlight">', '</span>')
-            div.innerHTML = favicon + `<span class="text">${highlight}${url_text}</span>`;
-        } else {
-            // if no search results are provided, display the title as is
-            div.innerHTML = favicon + `<span class="text">${item.title}${url_text}</span>`;
+
+        var titleText = item.title;
+        var urlText = item.url;
+
+        // Highlight title if title results are provided
+        if (titleResults) {
+            titleText = fuzzysort.highlight(titleResults[i], '<span class="highlight">', '</span>');
         }
+
+        // Highlight URL if URL results are provided
+        if (urlResults) {
+            // Find the matching URL result for this item
+            var urlResult = urlResults.find(result => result.obj === item);
+            if (urlResult) {
+                urlText = fuzzysort.highlight(urlResult, '<span class="highlight">', '</span>');
+            }
+        }
+
+        var url_text = `&nbsp;&nbsp;&nbsp;&nbsp;<span class="url">${urlText}</span>`;
+        div.innerHTML = favicon + `<span class="text">${titleText}${url_text}</span>`;
+
         a.href = item.url;
         a.appendChild(div);
         if (i === selectedIndex) {
@@ -83,11 +96,11 @@ window.onload = function() {
     // Traverse the bookmarks tree
     function traverseBookmarks(node, folder) {
         folder = folder.replace("/ Bookmarks Bar /", "")
-        if(node.url) {
+        if (node.url) {
             node.title = folder + node.title
             bookmarks.push(node);
         }
-        if(node.children) {
+        if (node.children) {
             node.children.forEach(function(child) {
                 traverseBookmarks(child, folder + node.title + " / ");
             });
@@ -98,24 +111,58 @@ window.onload = function() {
     searchBar.focus();
 
     var lastSearchResults = null;  // store the last search results
+    var lastUrlResults = null;  // store the last URL search results
     searchBar.addEventListener('input', function() {
         var startTime = performance.now();
 
         var query = this.value;
         selectedIndex = 0;  // reset the selected index
-        
+
         if (query === '') {
             // if the search bar is empty, display all items
             displayItems(bookmarks);
             lastSearchResults = null;
+            lastUrlResults = null;
             currentResults = bookmarks;
         } else {
-            // NOTE: this fuzzysort is a little weird, displaying items that don't have the query contingous before ones that do
-            var results = fuzzysort.go(query, bookmarks, {key: 'title', limit: DISPLAY_LIMIT, threshold: 0});
-            var results_obj = results.map(result => result.obj)
-            displayItems(results_obj, results);
-            lastSearchResults = results;
-            currentResults = results_obj;
+            var titleQuery, urlQuery;
+
+            // Check if query contains double space for dual search
+            if (query.includes('  ')) {
+                var parts = query.split('  ');
+                titleQuery = parts[0];
+                urlQuery = parts[1] || '';
+            } else {
+                titleQuery = query;
+                urlQuery = '';
+            }
+
+            var filteredBookmarks = bookmarks;
+
+            var urlResults = null;
+
+            // If URL query is provided, first filter by URL using fuzzysort
+            if (urlQuery) {
+                urlResults = fuzzysort.go(urlQuery, bookmarks, { key: 'url', threshold: FUZZYSORT_THRESHOLD });
+                filteredBookmarks = urlResults.map(result => result.obj);
+            }
+
+            // Then search by title using fuzzysort
+            if (titleQuery) {
+                // NOTE: this fuzzysort is a little weird, displaying items that don't have the query contingous before ones that do
+                var results = fuzzysort.go(titleQuery, filteredBookmarks, { key: 'title', limit: DISPLAY_LIMIT, threshold: FUZZYSORT_THRESHOLD });
+                var results_obj = results.map(result => result.obj);
+                displayItems(results_obj, results, urlResults);
+                lastSearchResults = results;
+                lastUrlResults = urlResults;
+                currentResults = results_obj;
+            } else {
+                // If only URL filtering (no title query), display filtered results without fuzzysort
+                displayItems(filteredBookmarks, null, urlResults);
+                lastSearchResults = null;
+                lastUrlResults = urlResults;
+                currentResults = filteredBookmarks;
+            }
         }
 
         var timeTaken = ((performance.now() - startTime) / 1000).toFixed(2);  // time taken in seconds
@@ -128,14 +175,14 @@ window.onload = function() {
             e.preventDefault();  // prevent the default behavior (scrolling the page)
             if (selectedIndex < currentResults.length - 1) {
                 selectedIndex++;
-                displayItems(currentResults, lastSearchResults);
+                displayItems(currentResults, lastSearchResults, lastUrlResults);
             }
         } else if ((e.ctrlKey && e.key === 'k') || e.key === 'ArrowUp') {
             // if Ctrl-k or ArrowUp is pressed, move the selection up
             e.preventDefault();  // prevent the default behavior (scrolling the page)
             if (selectedIndex > 0) {
                 selectedIndex--;
-                displayItems(currentResults, lastSearchResults);
+                displayItems(currentResults, lastSearchResults, lastUrlResults);
             }
         } else if (e.ctrlKey && e.key === 'd') {
             selectedIndex += SCROLL_AMOUNT;
