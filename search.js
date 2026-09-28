@@ -312,9 +312,12 @@ window.onload = function() {
         } catch (err) {
             showStatus(`couldn't ${archiveMode ? 'restore' : 'archive'}: ${err.message}`);
         }
-        await loadBookmarks();
-        runSearch();
-        busy = false;
+        try {
+            await loadBookmarks();
+            runSearch();
+        } finally {
+            busy = false;
+        }
     }
 
     // Get all bookmarks when the page loads
