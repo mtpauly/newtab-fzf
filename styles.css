@@ -88,13 +88,21 @@ header {
     color: var(--text);
 }
 
-#randomBookmarkText {
+#randomBookmarkText, #archiveToggleText {
     color: var(--text);
     text-decoration: none;
+    cursor: pointer;
 }
 
-#randomBookmarkText:hover {
+#randomBookmarkText:hover, #archiveToggleText:hover {
     background-color: var(--selected);
+}
+
+#statusText {
+    min-height: 1.2em;
+    margin-top: 5px;
+    text-align: center;
+    color: var(--highlight);
 }
 
 img.favicon {
